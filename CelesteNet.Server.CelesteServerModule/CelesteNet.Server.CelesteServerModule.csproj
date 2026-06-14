@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>CelesteNet.Server.CelesteServerModule</AssemblyName>
+    <RootNamespace>Celeste.Mod.CelesteNet.Server.CelesteServer</RootNamespace>
+  </PropertyGroup>
+
+  <Import Project="..\CelesteNet.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\CelesteNet.Server.ChatModule\CelesteNet.Server.ChatModule.csproj" Private="false" />
+  </ItemGroup>
+
+</Project>

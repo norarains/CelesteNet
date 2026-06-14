@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -13,22 +13,22 @@ namespace Celeste.Mod.CelesteNet.Client
         public OuiBothServerInstalledWhoops()
         {
             // TODO 其他更好的 "clean" 方法?
-            string des = Dialog.Get("MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS").Replace("{break}", "\n") + "\n";
+            string des = Dialog.Get("RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS").Replace("{break}", "\n") + "\n";
             var module = CelesteNetClientModule.Instance;
             des = string.Format(des, module.CurrentVersion, module.CurrentCelesteNetVersion);
 
-            var btn1 = new TextMenu.Button(Dialog.Clean("MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE")).Pressed(UseGroupServerAndRestart);
-            var btn2 = new TextMenu.Button(Dialog.Clean("MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE")).Pressed(Return);
+            var btn1 = new TextMenu.Button(Dialog.Clean("RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE")).Pressed(UseGroupServerAndRestart);
+            var btn2 = new TextMenu.Button(Dialog.Clean("RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE")).Pressed(Return);
             menu = new TextMenu()
         {
             new TextMenu.Header("Whoops!"),
-            new TextMenu.SubHeader(Dialog.Clean("MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_WHAT")),
+            new TextMenu.SubHeader(Dialog.Clean("RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_WHAT")),
             new TextMenu.SubHeader(des),
             btn1,
             btn2,
         };
-            btn1.AddDescription(menu, Dialog.Clean("MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE_DESC"));
-            btn2.AddDescription(menu, Dialog.Clean("MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE_DESC"));
+            btn1.AddDescription(menu, Dialog.Clean("RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE_DESC"));
+            btn2.AddDescription(menu, Dialog.Clean("RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE_DESC"));
         }
 
         public override IEnumerator Enter(Oui from)
@@ -89,7 +89,7 @@ namespace Celeste.Mod.CelesteNet.Client
             list.Add(fileName);
             using StreamWriter sw = new(Everest.Loader.PathBlacklist);
             sw.WriteLine("# This is the blacklist. Lines starting with # are ignored.");
-            sw.WriteLine("# File generated through the Miao.CelesteNet.Client \"Whoops\" menu.");
+            sw.WriteLine("# File generated through the Ring.CelesteNet.Client \"Whoops\" menu.");
             foreach (var fn in list)
             {
                 sw.WriteLine(fn);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Celeste.Mod.CelesteNet.DataTypes;
@@ -158,8 +158,7 @@ namespace Celeste.Mod.CelesteNet.Client.Components {
             // catch missing avatars - "restoring" these happens in Handle above when the avatar is fully received
             string avatar = $"celestenet_avatar_{info.ID}_";
             if (!Emoji.Registered.Contains(avatar)) {
-                info.DisplayName = info.DisplayName.Replace($":{avatar}:", AvatarMissing);
-                info.UpdateDisplayName(true);
+                info.UpdateDisplayName(false);
                 
                 // 使用 AvatarManager 下载并注册头像
                 if (!string.IsNullOrEmpty(info.AvatarURL)) {

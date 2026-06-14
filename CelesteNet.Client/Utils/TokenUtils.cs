@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,7 @@ namespace Celeste.Mod.CelesteNet.Client.Utils
     {
         public static bool RefreshToken()
         {
-            var result = HttpUtils.Post("https://bbs.celemiao.com/oauth/token", "\r\n{\"client_id\":\"ccE8Ulzu4ObVUlWmSozW7CUtc6zmfAQd\",\r\n\"client_secret\":\"Fzojlor7EuxB6KT2juQoTTuAs9Is2F\",\r\n\"grant_type\":\"refresh_token\",\r\n\"refresh_token\":\"" + CelesteNetClientModule.Settings.RefreshToken + "\",\r\n\"redirect_uri\":\"http://localhost:38038/auth\"\r\n}\r\n");
+            var result = HttpUtils.Post("https://bbs.ring.invalid/oauth/token", "\r\n{\"client_id\":\"ccE8Ulzu4ObVUlWmSozW7CUtc6zmfAQd\",\r\n\"client_secret\":\"Fzojlor7EuxB6KT2juQoTTuAs9Is2F\",\r\n\"grant_type\":\"refresh_token\",\r\n\"refresh_token\":\"" + CelesteNetClientModule.Settings.RefreshToken + "\",\r\n\"redirect_uri\":\"http://localhost:38038/auth\"\r\n}\r\n");
             dynamic json = JsonConvert.DeserializeObject(result);
             if(json?.error != null)
             {

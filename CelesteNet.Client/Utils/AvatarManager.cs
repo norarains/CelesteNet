@@ -84,6 +84,25 @@ namespace Celeste.Mod.CelesteNet.Client.Utils
             }
         }
 
+        private string RewriteAvatarUrlForConnectedServer(string avatarUrl)
+        {
+            try
+            {
+                string? connectedHost = Context.Client?.Settings?.Host;
+                if (string.IsNullOrWhiteSpace(connectedHost))
+                    return avatarUrl;
+
+                UriBuilder builder = new UriBuilder(avatarUrl);
+                builder.Host = connectedHost.Trim('[', ']');
+                return builder.Uri.ToString();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.WRN, "avatar", $"Could not rewrite avatar URL '{avatarUrl}': {ex.Message}");
+                return avatarUrl;
+            }
+        }
+
         private void LoadCacheTimestamps()
         {
             try
@@ -118,6 +137,8 @@ namespace Celeste.Mod.CelesteNet.Client.Utils
         {
             if (string.IsNullOrEmpty(avatarUrl))
                 return false;
+
+            avatarUrl = RewriteAvatarUrlForConnectedServer(avatarUrl);
 
             string avatarId = $"celestenet_avatar_{playerInfo.ID}_";
             string urlMd5 = GetMd5Hash(avatarUrl);

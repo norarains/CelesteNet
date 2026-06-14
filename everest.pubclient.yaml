@@ -1,4 +1,4 @@
-- Name: Miao.CelesteNet.Client
+- Name: Ring.CelesteNet.Client
   Version: 3.2.9
   DLL: CelesteNet.Client.dll
   Dependencies:

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -983,14 +983,14 @@ namespace Celeste.Mod.CelesteNet.Client.Components {
                             new(50f * scale, y + 20f * scale),
                             Vector2.Zero,
                             lineFontScale,
-                            msg.Color * alpha * (msg.ID == uint.MaxValue ? 0.8f : 1f)
+                            Color.Lerp(msg.Color, Color.White, 0.55f) * alpha
                         );
                         CelesteNetClientFont.Draw(
                             text,
                             new(75f * scale + sizeTime.X, y + 25f * scale),
                             Vector2.Zero,
                             lineFontScale,
-                            msg.Color * alpha * (msg.ID == uint.MaxValue ? 0.8f : 1f)
+                            Color.Lerp(msg.Color, Color.White, 0.55f) * alpha
                         );
 
                         if (renderedCount >= logLength) {

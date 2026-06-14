@@ -1,9 +1,10 @@
-﻿using MC = Mono.Cecil;
+using MC = Mono.Cecil;
 using Microsoft.Xna.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Utils;
+using MonoMod.ModInterop;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -11,6 +12,23 @@ using System.Collections;
 
 namespace Celeste.Mod.CelesteNet.Client {
     public static class CelesteNetClientUtils {
+
+        static CelesteNetClientUtils() {
+            typeof(MotionSmoothingImports).ModInterop();
+        }
+
+        [ModImportName("MotionSmoothing")]
+        private static class MotionSmoothingImports {
+            public static Func<Vector2> GetFractionalCameraOffset = () => Vector2.Zero;
+        }
+
+        private static Vector2 GetMotionSmoothingCameraOffset() {
+            try {
+                return MotionSmoothingImports.GetFractionalCameraOffset();
+            } catch {
+                return Vector2.Zero;
+            }
+        }
 
         public static float GetScreenScale(this Level level)
             => level.Zoom * ((320f - level.ScreenPadding * 2f) / 320f);
@@ -20,6 +38,7 @@ namespace Celeste.Mod.CelesteNet.Client {
             if (cam == null)
                 return pos;
 
+            pos += GetMotionSmoothingCameraOffset();
             pos -= cam.Position;
 
             Vector2 size = new(320f, 180f);

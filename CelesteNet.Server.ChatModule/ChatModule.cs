@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
@@ -221,7 +221,8 @@ namespace Celeste.Mod.CelesteNet.Server.Chat {
             if (!session.ClientOptions.IsReconnect) {
                 if (Settings.GreetPlayers)
                     Broadcast(Settings.MessageGreeting.InjectSingleValue("player", session.PlayerInfo?.FullName ?? "???"));
-                SendTo(session, Settings.MessageMOTD);
+                if (!string.IsNullOrWhiteSpace(Settings.MessageMOTD))
+                    SendTo(session, Settings.MessageMOTD);
             }
 
             session.SendCommandList(Commands.DataAll);

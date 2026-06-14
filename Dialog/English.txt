@@ -1,4 +1,4 @@
-﻿# NOTES:
+# NOTES:
 # The # Symbol at the start of a line counts as a Comment. To include in dialog, use a \#
 # The . Symbol will cause a pause unless escaped with \. (ex: Mr. Oshiro has a pause, Mr\. Oshiro does not)
 # Newlines automatically create a Page Break, unless there is an {n} command on the previous line
@@ -22,7 +22,7 @@
 	POSTCARD_CELESTENETCLIENT_BACKTOMENU=			The server has sent you back to the main menu\.
 
 # GhostNet Module Options
-	MODOPTIONS_CELESTENETCLIENT_TITLE=			CelesteNet - Multiplayer
+	MODOPTIONS_CELESTENETCLIENT_TITLE=           Ring CelesteNet
 
 	MODOPTIONS_CELESTENETCLIENT_CONNECTED=			Connect to ((server))
 	MODOPTIONS_CELESTENETCLIENT_CONNECTEDHINT=			Try setting "Receive Player Avatars" OFF if you can't connect
@@ -33,18 +33,21 @@
 	MODOPTIONS_CELESTENETCLIENT_AUTORECONNECT=			Auto Reconnect
 	MODOPTIONS_CELESTENETCLIENT_AUTORECONNECTHINT=		Only reconnects when getting disconnected unexpectedly, not on start-up.
 	MODOPTIONS_CELESTENETCLIENT_SERVER=				Server: ((server))
-	MODOPTIONS_CELESTENETCLIENT_LOGINMODE=			Login Mode
-	MODOPTIONS_CELESTENETCLIENT_LOGINMODEHINT=		Guest - set "Name" below and connect as Guest{n}Key - see note on "Key" input below when enabled{n}NOTE: Name/Key can only be edited when you're disconnected/offline!
+	MODOPTIONS_CELESTENETCLIENT_SERVER_PORT=           Server port: ((server))
+	MODOPTIONS_CELESTENETCLIENT_USERNAME=           Username: ((username))
+	MODOPTIONS_CELESTENETCLIENT_USERNAMEHINT=       Must match an account in the local server dashboard.
+	MODOPTIONS_CELESTENETCLIENT_LOGINMODE=           Login
+	MODOPTIONS_CELESTENETCLIENT_LOGINMODEHINT=           Enter the local server username and password from the dashboard.{n}NOTE: Username/password can only be edited when you're disconnected/offline!
 	MODOPTIONS_CELESTENETCLIENT_NAMEHINT=			A guest name - will not use linked account or have profile pic.
-	MODOPTIONS_CELESTENETCLIENT_KEY=				Key: ((key))
-	MODOPTIONS_CELESTENETCLIENT_KEYHINT=			They will auto set by mode,donot edit unless you know what you're doing!{n}NOTE: Name/Key can only be edited when you're disconnected/offline!
+	MODOPTIONS_CELESTENETCLIENT_KEY=           Password: ((key))
+	MODOPTIONS_CELESTENETCLIENT_KEYHINT=           Must match the account password in the local server dashboard.{n}NOTE: Username/password can only be edited when you're disconnected/offline!
 	MODOPTIONS_CELESTENETCLIENT_LOGIN=			    LOGIN
 
 	MODOPTIONS_CELESTENETCLIENT_KEYDISPLAY_HIDE=\#\#\#HIDDEN\#\#\#
 	MODOPTIONS_CELESTENETCLIENT_KEYDISPLAY_NONE=-
 	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDCHARS=   :celestenet_warning: Contains invalid characters - check your input
-	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDKEY=   :celestenet_warning: Server returned "Invalid key" - check your input
-	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDLENGTH=   :celestenet_warning: Key must have length 16 - check your input
+	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDKEY=           :celestenet_warning: Server returned "Invalid username or password" - check your input
+	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDLENGTH=           :celestenet_warning: Password is invalid - check your input
 
 	MODOPTIONS_CELESTENETCLIENT_RESETGENERAL=	Reset General Settings
 	MODOPTIONS_CELESTENETCLIENT_CONNECTLOCALLY=	Connect to local server
@@ -114,16 +117,16 @@
 	MODOPTIONS_CELESTENETCLIENT_BINDS_EMOTE=		Emotes
     MODOPTIONS_CELESTENETCLIENT_AUTO_CONNECT=       Auto Connect
     MODOPTIONS_CELESTENETCLIENT_USE_EN_FONT_WHEN_POSSIBLE= Use English Font when Possible
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS= It seems that you have installed both MiaoCelesteNet and CelesteNet.
-                                          Or you have installed multiple MiaoCelesteNet.
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS= It seems that you have installed both RingCelesteNet and CelesteNet.
+                                          Or you have installed multiple RingCelesteNet.
                                           If the following solution doesn't work, please ensure only one is installed.
-                                          The version of Miao.CelesteNet.Client is: v{0}
+                                          The version of Ring.CelesteNet.Client is: v{0}
                                           The version of CelesteNet.Client is: v{1}
-                                          Unfortunately, MiaoCelesteNet and CelesteNet are not compatible. You can choose:
+                                          Unfortunately, RingCelesteNet and CelesteNet are not compatible. You can choose:
 
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE= Disable CelesteNet and choose to use MiaoCelesteNet
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE_DESC= This will disable CelesteNet and restart the game.
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE= I know what I'm doing
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE_DESC= Proceed with entering the game, which might lead to unexpected behavior.
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_WHAT= What happened?
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE= Disable CelesteNet and choose to use RingCelesteNet
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE_DESC= This will disable CelesteNet and restart the game.
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE= I know what I'm doing
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE_DESC= Proceed with entering the game, which might lead to unexpected behavior.
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_WHAT= What happened?
 	MODOPTIONS_CELESTENETCLIENT_OPATICY_NEAR_SELF=	Nearby Player Transparent

@@ -322,7 +322,7 @@ Connection: close
                     );
                     return null;
                 }
-                playerInfo!.AvatarPhotoUrl ??= "https://bbs.celemiao.com/assets/uploads/profile/default.jpg";
+                playerInfo!.AvatarPhotoUrl ??= "https://bbs.ring.invalid/assets/uploads/profile/default.jpg";
 
                 // Parse the client options
                 CelesteNetClientOptions clientOptions = new();
@@ -433,51 +433,38 @@ Who wants some tea?"
 
         public async Task<(string?, NyaNetPlayerInfo?)> AuthenticatePlayerNameKey(string nameKey, string conUID)
         {
-            // Get the player UID and name from the player name-key
-            if (nameKey.Length > 1 && nameKey.StartsWith("#"))
-            {
-                string key = nameKey[1..];
-                Logger.Log(LogLevel.INF, "NetAuth", $"Authing: {key}");
-                string json;
+            int separator = nameKey.LastIndexOf('#');
+            if (separator <= 0 || separator >= nameKey.Length - 1)
+                return (string.Format(Server.Settings.MessageAuthOnly, nameKey), null);
 
-                FileInfo fi = new(Path.Combine("temp", $"{nameKey}.json"));
-                if (fi.Exists && DateTime.UtcNow - fi.LastWriteTime < TimeSpan.FromMinutes(5))
-                {
-                    Logger.Log(LogLevel.INF, "NetAuth", $"Using not outdated auth cache of {fi.Name}.");
-                    json = await File.ReadAllTextAsync(fi.FullName);
-                }
-                else
-                {
-                    json = await HttpUtils.GetAsync($"https://bbs.celemiao.com/api/celeste/user?access_token={key}");
-                }
-               
-                NyaNetAuthResult? authResult = JsonSerializer.Deserialize<NyaNetAuthResult>(json);
-                if (authResult == null)
-                    return (string.Format(Server.Settings.MessageInvalidKey, nameKey), null);
-
-                if (authResult.SuspendedUntil > DateTime.Now)
-                {
-                    return (string.Format("Your Account has been Banned Until {0}", authResult.SuspendedUntil),null);
-                }
-
-                Logger.Log(LogLevel.INF, "NetAuth", $"Auth result: {json}");
-                NyaNetPlayerInfo playerInfo = new(
-                    $"miaoNet-{conUID}",
-                    authResult.Username,
-                    authResult.Color,
-                    authResult.AvatarUrl,
-                    authResult.Prefix
-                    );
-
-                if (authResult.IsEmailConfirmed != 0)
-                {
-                    Directory.CreateDirectory("temp");
-                    await File.WriteAllTextAsync(fi.FullName, json);
-                    Logger.Log(LogLevel.INF, "NetAuth", $"Auth cache for {nameKey}.");
-                }
-                return (null, playerInfo);
+            string suppliedName = nameKey[..separator].Trim();
+            string key = nameKey[(separator + 1)..].Trim();
+            string authPath = Environment.GetEnvironmentVariable("CELESTE_SERVER_AUTH_FILE") ?? Path.Combine("config", "local-users.json");
+            if (!File.Exists(authPath)) {
+                Logger.Log(LogLevel.CRI, "NetAuth", $"Local auth file not found: {authPath}");
+                return ("Local auth file is missing.", null);
             }
-            return (string.Format(Server.Settings.MessageAuthOnly, nameKey), null);
+
+            string json = await File.ReadAllTextAsync(authPath);
+            Dictionary<string, LocalAuthUser>? users = JsonSerializer.Deserialize<Dictionary<string, LocalAuthUser>>(
+                json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            );
+
+            if (users == null || !users.TryGetValue(key, out LocalAuthUser? user))
+                return (string.Format(Server.Settings.MessageInvalidKey, nameKey), null);
+
+            if (user.Name.IsNullOrEmpty() || !string.Equals(user.Name!.Trim(), suppliedName, StringComparison.OrdinalIgnoreCase))
+                return (string.Format(Server.Settings.MessageInvalidKey, nameKey), null);
+
+            string uid = user.UID.IsNullOrEmpty() ? $"local-{key}" : user.UID!;
+            string name = user.Name.IsNullOrEmpty() ? "Player" : user.Name!;
+            string color = user.Color.IsNullOrEmpty() ? "FFFFFF" : user.Color!;
+            string avatarUrl = user.AvatarUrl.IsNullOrEmpty() ? "" : user.AvatarUrl!;
+            string prefix = user.Prefix.IsNullOrEmpty() ? "" : user.Prefix!;
+
+            Logger.Log(LogLevel.INF, "NetAuth", $"Local auth accepted for {name} ({uid}).");
+            return (null, new NyaNetPlayerInfo(uid, name, color, avatarUrl, prefix));
         }
 
         public class NyaNetPlayerInfo
@@ -505,6 +492,15 @@ Who wants some tea?"
                 AvatarPhotoUrl = avatarPhotoUrl;
                 PlayerPrefix = playerPrefix;
             }
+        }
+
+        public class LocalAuthUser
+        {
+            public string? UID { get; set; }
+            public string? Name { get; set; }
+            public string? Color { get; set; }
+            public string? AvatarUrl { get; set; }
+            public string? Prefix { get; set; }
         }
 
         public class NyaNetAuthResult

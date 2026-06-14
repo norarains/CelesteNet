@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -248,7 +248,16 @@ namespace Celeste.Mod.CelesteNet.Client
                 Logger.Log(LogLevel.INF, "LoadSettings", $"Settings Migration done, set Version to {Settings.Version}");
             }
 
-            Settings.Server = CelesteNetClientSettings.DefaultServer;
+
+            if (!Settings.RingVisualDefaultsApplied)
+            {
+                if (Settings.UISizeChat <= CelesteNetClientSettings.UISizeDefault)
+                    Settings.UISizeChat = CelesteNetClientSettings.UISizeDefault + 1;
+                Settings.UICustomize ??= new CelesteNetClientSettings.UICustomizeMenu();
+                if (Settings.UICustomize.ChatOpacity < 19)
+                    Settings.UICustomize.ChatOpacity = 19;
+                Settings.RingVisualDefaultsApplied = true;
+            }
 
             if (Settings.Emotes == null || Settings.Emotes.Length == 0)
             {

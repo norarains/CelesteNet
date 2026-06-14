@@ -22,7 +22,7 @@
 	POSTCARD_CELESTENETCLIENT_BACKTOMENU=			服务器将你传送回了主菜单。
 
 # GhostNet Module Options
-	MODOPTIONS_CELESTENETCLIENT_TITLE=			CelesteNyaNet - 蔚蓝喵服
+	MODOPTIONS_CELESTENETCLIENT_TITLE=           Ring CelesteNet
 
 	MODOPTIONS_CELESTENETCLIENT_CONNECTED=			连接
 	MODOPTIONS_CELESTENETCLIENT_CONNECTEDHINT=			如果连接失败, 请尝试将 “接收玩家头像” 设置为关闭
@@ -35,19 +35,19 @@
 	MODOPTIONS_CELESTENETCLIENT_AUTORECONNECT=			自动重连
 	MODOPTIONS_CELESTENETCLIENT_AUTORECONNECTHINT=		如果你断开连接，将自动重连
 	MODOPTIONS_CELESTENETCLIENT_SERVER=				服务器: ((server))
-	MODOPTIONS_CELESTENETCLIENT_LOGINMODE=			登录模式
+	MODOPTIONS_CELESTENETCLIENT_LOGINMODE=           Login
 	MODOPTIONS_CELESTENETCLIENT_LOGINMODE_KEY=	    密钥
-	MODOPTIONS_CELESTENETCLIENT_LOGINMODEHINT=		密钥 - 请查看下面一项设置的提示 {n}注意: 名称/密钥仅能在你断连/离线时更改!
+	MODOPTIONS_CELESTENETCLIENT_LOGINMODEHINT=           Enter the local server username and password from the dashboard.{n}NOTE: Username/password can only be edited when you're disconnected/offline!
 	MODOPTIONS_CELESTENETCLIENT_NAMEHINT=			A guest name - will not use linked account or have profile pic.
-	MODOPTIONS_CELESTENETCLIENT_KEY=				密钥: ((key))
-	MODOPTIONS_CELESTENETCLIENT_KEYHINT=			非必要请勿轻易改动，除非你知道你在做什么。
+	MODOPTIONS_CELESTENETCLIENT_KEY=           Password: ((key))
+	MODOPTIONS_CELESTENETCLIENT_KEYHINT=           Must match the account password in the local server dashboard.{n}NOTE: Username/password can only be edited when you're disconnected/offline!
 	MODOPTIONS_CELESTENETCLIENT_LOGIN=			登录
 
 	MODOPTIONS_CELESTENETCLIENT_KEYDISPLAY_HIDE=\#\#\#隐藏\#\#\#
 	MODOPTIONS_CELESTENETCLIENT_KEYDISPLAY_NONE=-
 	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDCHARS=   :celestenet_warning: Contains invalid characters - check your input
-	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDKEY=   :celestenet_warning: Server returned "Invalid key" - check your input
-	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDLENGTH=   :celestenet_warning: Key must have length 16 - check your input
+	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDKEY=           :celestenet_warning: Server returned "Invalid username or password" - check your input
+	MODOPTIONS_CELESTENETCLIENT_KEYERROR_INVALIDLENGTH=           :celestenet_warning: Password is invalid - check your input
 
 	MODOPTIONS_CELESTENETCLIENT_RESETGENERAL=	重置全局设置
 	MODOPTIONS_CELESTENETCLIENT_RESETGENERALHINT=	重置所有设置为默认值
@@ -152,7 +152,7 @@
     MODOPTIONS_CELESTENETCLIENT_EMOTEWHEEL=     表情轮盘
     
     MODOPTIONS_CELESTENETCLIENT_RELOAD=          重新加载表情
-    MODOPTIONS_CELESTENETCLIENT_RELOADHINT=      请在文本编辑器中编辑文件 "Saves/modsettings-Miao.CelesteNet.Client.celeste"。
+    MODOPTIONS_CELESTENETCLIENT_RELOADHINT=      请在文本编辑器中编辑文件 "Saves/modsettings-Ring.CelesteNet.Client.celeste"。
     MODOPTIONS_CELESTENETCLIENT_RECOMMENDED=     安装推荐的模组
     MODOPTIONS_CELESTENETCLIENT_RECOMMENDEDHINT= ((list))
 
@@ -189,15 +189,19 @@
     MODOPTIONS_CELESTENETCLIENT_AUTO_CONNECT=               启动自动连接到服务器
     MODOPTIONS_CELESTENETCLIENT_USE_EN_FONT_WHEN_POSSIBLE=  尽可能使用英文字体
 
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS= 似乎你同时安装了群服以及官服。
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS= 似乎你同时安装了群服以及官服。
                                               （或者同时安装了多个群服，如果下述解决方案无效请确保仅有一个群服被安装。）
-                                              群服（Miao.CelesteNet.Client） 的版本为： v{0}
+                                              群服（Ring.CelesteNet.Client） 的版本为： v{0}
                                               官服（CelesteNet.Client） 的版本为： v{1}
                                               不幸的是， 群服与官服不兼容， 你可以选择：
 
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE= 禁用官服并选择使用群服
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE_DESC= 这会禁用官服并重启游戏
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE= 我知道我正在做什么
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE_DESC= 仍然进入游戏, 这可能会导致不期望的行为
-    MIAOCELESTENET_BOTHSERVERINSTALLEDWHOOPS_WHAT= 发生了什么？
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE= 禁用官服并选择使用群服
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_DISABLE_DESC= 这会禁用官服并重启游戏
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE= 我知道我正在做什么
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_CONTINUE_DESC= 仍然进入游戏, 这可能会导致不期望的行为
+    RINGCELESTENET_BOTHSERVERINSTALLEDWHOOPS_WHAT= 发生了什么？
     MODOPTIONS_CELESTENETCLIENT_OPATICY_NEAR_SELF=	近处玩家半透明
+	MODOPTIONS_CELESTENETCLIENT_USERNAME=           Username: ((username))
+	MODOPTIONS_CELESTENETCLIENT_USERNAMEHINT=       Must match an account in the local server dashboard.
+
+	MODOPTIONS_CELESTENETCLIENT_SERVER_PORT=           Server port: ((server))

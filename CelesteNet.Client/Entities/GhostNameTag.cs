@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.CelesteNet.Client.Entities {
@@ -52,10 +52,12 @@ namespace Celeste.Mod.CelesteNet.Client.Entities {
                 level,
                 out Vector2 pos,
                 marginLeft:   screenMargins + marginSize.X,
-                marginTop:    screenMargins + marginSize.Y,
+                marginTop:    screenMargins + marginSize.Y * 1.5f,
                 marginRight:  screenMargins + marginSize.X,
                 marginBottom: screenMargins
             );
+
+            pos.Y -= marginSize.Y * 0.5f;
 
             int opacity = CelesteNetClientModule.Settings.InGameHUD.NameOpacity;
 
