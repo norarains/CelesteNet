@@ -18,6 +18,7 @@ namespace Celeste.Mod.CelesteNet.Server.Chat {
 #pragma warning disable CS8618 // Set on init.
         public SpamContext BroadcastSpamContext;
         public CommandsContext Commands;
+        public DummyContext Dummies;
 #pragma warning restore CS8618
 
         private HashSet<string> filterDrop = new();
@@ -29,6 +30,7 @@ namespace Celeste.Mod.CelesteNet.Server.Chat {
 
             BroadcastSpamContext = new(this);
             Commands = new(this);
+            Dummies = new(this);
             Server.OnSessionStart += OnSessionStart;
             using (Server.ConLock.R())
                 foreach (CelesteNetPlayerSession session in Server.Sessions)
@@ -78,6 +80,7 @@ namespace Celeste.Mod.CelesteNet.Server.Chat {
         public override void Dispose() {
             base.Dispose();
 
+            Dummies.Dispose();
             BroadcastSpamContext.Dispose();
 
             using (Server.ConLock.R())
