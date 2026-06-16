@@ -118,8 +118,13 @@ namespace Celeste.Mod.CelesteNet.Client.Entities {
             if (!Interactive || GrabCooldown > 0f || !CelesteNetClientModule.Settings.InGame.Interactions || Context?.Main?.GrabbedBy == this)
                 return;
 
-            if (player.StateMachine.State == Player.StNormal &&
-                player.Speed.Y > 0f && player.Bottom <= Top + 3f) {
+            // Bounce on any contact from above that isn't moving UP — including mid-dash
+            // (StDash) and a flat dash (Speed.Y == 0), exactly like dashing onto a Puffer.
+            // Player.Bounce() cancels the dash (state -> Normal) and only sets Speed.Y,
+            // so a horizontal dash keeps its Speed.X -> you launch out as a "super" off the
+            // other player's head. (Was gated to StNormal + Speed.Y > 0, which filtered all
+            // dashes and flat dashes, so super/hyper off a head was impossible.)
+            if (player.Speed.Y >= 0f && player.Bottom <= Top + 3f) {
 
                 Dust.Burst(player.BottomCenter, -1.57079637f, 8);
                 (Scene as Level)?.DirectionalShake(Vector2.UnitY, 0.05f);

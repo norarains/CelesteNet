@@ -109,6 +109,7 @@ namespace Celeste.Mod.CelesteNet.Client
 
         public override void Load()
         {
+            DeathBeacon.Start();
             Logger.LogCelesteNetTag = true;
             Logger.Log(LogLevel.DEV, "lifecycle", $"CelesteNetClientModule Load");
 
@@ -183,6 +184,7 @@ namespace Celeste.Mod.CelesteNet.Client
 
         public override void Unload()
         {
+            DeathBeacon.Stop();
             Logger.Log(LogLevel.DEV, "lifecycle", $"CelesteNetClientModule Unload");
             CelesteNetClientRC.Shutdown();
             Everest.Events.Celeste.OnShutdown -= CelesteNetClientRC.Shutdown;
