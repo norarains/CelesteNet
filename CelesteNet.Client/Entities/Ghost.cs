@@ -82,7 +82,14 @@ namespace Celeste.Mod.CelesteNet.Client.Entities {
 
             Collidable = true;
             Collider = new Hitbox(8f, 11f, -4f, -11f);
-            Add(new PlayerCollider(OnPlayer));
+            // The OnPlayer (bounce/super) check gets its OWN slightly taller hitbox — 5px
+            // higher on top than the entity collider — so a stomp/super off a head has a bit
+            // of extra fault tolerance above. PlayerCollider.Check swaps this in only for the
+            // check, so grab (Holdable) + every other ghost collision still use the entity
+            // Collider above, unchanged. (Puffer does the same: its PlayerCollider hitbox is
+            // bigger than its entity collider.) `Top` in OnPlayer stays the entity top, so the
+            // bounce condition's lower bound is unchanged — this only widens the window upward.
+            Add(new PlayerCollider(OnPlayer, new Hitbox(8f, 16f, -4f, -16f)));
 
             NameTag = new(this, "");
             NameTag.Alpha = 0.85f;
