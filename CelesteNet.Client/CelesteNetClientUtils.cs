@@ -87,6 +87,16 @@ namespace Celeste.Mod.CelesteNet.Client {
         public static bool? GetWasDashB(this Player self)
             => (bool?) f_Player_wasDashB?.GetValue(self);
 
+        private readonly static FieldInfo? f_Player_jumpGraceTimer =
+            typeof(Player).GetField("jumpGraceTimer", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        /// <summary>Give the player a coyote-time grace window — the gate Celeste's DashUpdate uses
+        /// to allow a super/hyper dash jump. Used so dashing onto another player's head can launch a
+        /// real super/hyper (Celeste resolves super vs hyper vs reverse from duck/Facing/input),
+        /// instead of only the auto-jump bounce. Defaults to Player.JumpGraceTime (0.1s).</summary>
+        public static void GrantJumpGrace(this Player self, float time = 0.1f)
+            => f_Player_jumpGraceTimer?.SetValue(self, time);
+
         private readonly static FieldInfo? f_Level_updateHair =
             typeof(Level).GetField("updateHair", BindingFlags.NonPublic | BindingFlags.Instance);
 

@@ -43,6 +43,13 @@ namespace Celeste.Mod.CelesteNet.Client.Entities {
 
         public float GrabCooldown = 0f;
         public const float GrabCooldownMax = CelesteNetMainComponent.GrabCooldownMax;
+        // Head-stomp contact edge-detection, so the boop/dust/shake feedback fires ONCE per
+        // contact (on enter), not every overlapping frame. PlayerCollider only reports "currently
+        // overlapping" (no OnExit), so OnPlayer sets `stompContactThisFrame` while it overlaps and
+        // Update() rolls it into `wasStompContact` + clears it — a frame with no OnPlayer call
+        // means the player left the head (exit).
+        private bool stompContactThisFrame = false;
+        private bool wasStompContact = false;
         public byte GrabStrength;
         protected DataPlayerGrabPlayer? GrabPacket;
 
@@ -125,19 +132,47 @@ namespace Celeste.Mod.CelesteNet.Client.Entities {
             if (!Interactive || GrabCooldown > 0f || !CelesteNetClientModule.Settings.InGame.Interactions || Context?.Main?.GrabbedBy == this)
                 return;
 
-            // Bounce on any contact from above that isn't moving UP — including mid-dash
-            // (StDash) and a flat dash (Speed.Y == 0), exactly like dashing onto a Puffer.
-            // Player.Bounce() cancels the dash (state -> Normal) and only sets Speed.Y,
-            // so a horizontal dash keeps its Speed.X -> you launch out as a "super" off the
-            // other player's head. (Was gated to StNormal + Speed.Y > 0, which filtered all
-            // dashes and flat dashes, so super/hyper off a head was impossible.)
+            // Contact from above that isn't moving UP — including mid-dash and a flat dash.
             if (player.Speed.Y >= 0f && player.Bottom <= Top + 3f) {
 
-                Dust.Burst(player.BottomCenter, -1.57079637f, 8);
-                (Scene as Level)?.DirectionalShake(Vector2.UnitY, 0.05f);
-                Input.Rumble(RumbleStrength.Light, RumbleLength.Medium);
-                player.Bounce(Top + 2f);
-                player.Play("event:/game/general/thing_booped");
+                bool justLanded = !wasStompContact;   // rising edge: first frame of this contact
+                stompContactThisFrame = true;
+
+                if (player.DashAttacking) {
+                    // Treat the head as flat GROUND for the dash (no bounce): give the dash back
+                    // and keep granting on-ground status (a coyote window) so the player can
+                    // super / hyper / jump / re-dash off it with normal inputs — no pre-buffered
+                    // jump needed. Celeste's super then fires from its own DashUpdate (it gates on
+                    // |DashDir.Y| < 0.1 + jumpGraceTimer > 0), with exact vanilla speeds, and
+                    // super vs hyper vs reverse all resolve from the player's duck/Facing/input.
+                    player.RefillDash();
+                    CelesteNetClientUtils.GrantJumpGrace(player);
+
+                    // 斜下冲 fix: a down-diagonal dash never supers/hypers in the air, because the
+                    // super gate above only accepts near-horizontal dashes. On flat ground Celeste
+                    // converts a down-dash into a horizontal crouch-dash at dash start (Player
+                    // DashCoroutine, when onGround). We have no ground, so replicate that conversion
+                    // here on contact — the (now horizontal, ducking) dash + jump produces a hyper,
+                    // exactly like off a floor.
+                    if (player.DashDir.X != 0f && player.DashDir.Y > 0f && player.Speed.Y > 0f) {
+                        player.DashDir.X = Math.Sign(player.DashDir.X);
+                        player.DashDir.Y = 0f;
+                        player.Speed.Y = 0f;
+                        player.Speed.X *= 1.2f;
+                        player.Ducking = true;
+                    }
+                } else {
+                    // Not dashing: the original Puffer-style bounce.
+                    player.Bounce(Top + 2f);
+                }
+
+                // Feedback once on contact-enter (not every overlapping frame).
+                if (justLanded) {
+                    Dust.Burst(player.BottomCenter, -1.57079637f, 8);
+                    (Scene as Level)?.DirectionalShake(Vector2.UnitY, 0.05f);
+                    Input.Rumble(RumbleStrength.Light, RumbleLength.Medium);
+                    player.Play("event:/game/general/thing_booped");
+                }
 
             } else if (player.StateMachine.State != Player.StDash &&
                 player.StateMachine.State != Player.StRedDash &&
@@ -206,6 +241,10 @@ namespace Celeste.Mod.CelesteNet.Client.Entities {
             GrabCooldown -= Engine.RawDeltaTime;
             if (GrabCooldown < 0f)
                 GrabCooldown = 0f;
+            // Roll the per-frame stomp-contact flag: a frame where OnPlayer didn't run means the
+            // player is no longer on the head (collision exit), so the next contact re-fires the FX.
+            wasStompContact = stompContactThisFrame;
+            stompContactThisFrame = false;
 
             if (!holdable && Holdable.Holder != null) {
                 Collidable = false;
