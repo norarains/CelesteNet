@@ -31,6 +31,14 @@ namespace Celeste.Mod.CelesteNet.Server {
 
         public int MainPort { get; set; } = 17230;
 
+        // DESIGN INVARIANT: be careful not to break this. When TCPBindAddress is set (e.g.
+        // "127.0.0.1"), the TCP acceptor binds there on TCPBindPort (falling back to MainPort if
+        // 0), while UDP stays on MainPort across all interfaces. The celeste-utils orchestrator
+        // sets these so a TLS proxy can front the TCP/chat channel on the public MainPort and
+        // forward to the server's loopback TCP port. Empty = original public TCP bind on MainPort.
+        public string TCPBindAddress { get; set; } = "";
+        public int TCPBindPort { get; set; } = 0;
+
         public int MaxTickRate { get; set; } = 60;
         public float TickRateLowActivityThreshold { get; set; } = 0.3f;
         public float TickRateLowTCPUplinkBpSThreshold { get; set; } = 8388608; // 8 MBpS

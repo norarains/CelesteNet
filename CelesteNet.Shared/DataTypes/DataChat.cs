@@ -101,6 +101,24 @@ namespace Celeste.Mod.CelesteNet.DataTypes {
 
 
         public string ToString(bool useDisplayName, bool withID, bool withSessID = false) {
+            string prefix = LogPrefix(useDisplayName, withID, withSessID);
+
+            if (!Text.Contains('\n')) {
+                return $"{prefix} {Text}";
+            } else {
+                return $"{prefix}\n{Text}";
+            }
+        }
+
+        // DESIGN INVARIANT: be careful not to break this. Server-side chat logging must NOT persist
+        // the message body (the chat channel is end-to-end TLS-encrypted; on-disk logs are kept
+        // privacy-preserving). This redacted form keeps the metadata (id/tag/username/targets) for
+        // moderation/diagnostics but replaces the text with only its length. It is the single source
+        // of truth shared by every chat log sink — do not log {Text} directly.
+        public string ToRedactedString(bool useDisplayName, bool withID, bool withSessID = false)
+            => $"{LogPrefix(useDisplayName, withID, withSessID)} [redacted len={Text?.Length ?? 0}]";
+
+        private string LogPrefix(bool useDisplayName, bool withID, bool withSessID) {
             string id = "";
             if (withID)
                 id = $"{{{ID}v{Version}}}";
@@ -117,13 +135,7 @@ namespace Celeste.Mod.CelesteNet.DataTypes {
             if (TryGetSingleTarget(out DataPlayerInfo? target) && target != null)
                 username += " @ " + (useDisplayName ? target.DisplayName : target.FullName);
 
-            string prefix = $"{id} {tag} {username}:".TrimStart();
-
-            if (!Text.Contains('\n')) {
-                return $"{prefix} {Text}";
-            } else {
-                return $"{prefix}\n{Text}";
-            }
+            return $"{id} {tag} {username}:".TrimStart();
         }
     }
 }

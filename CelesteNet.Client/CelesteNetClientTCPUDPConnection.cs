@@ -23,13 +23,17 @@ namespace Celeste.Mod.CelesteNet.Client {
         private readonly CancellationTokenSource TokenSrc;
         private readonly Thread TCPRecvThread, UDPRecvThread, TCPSendThread, UDPSendThread;
 
-        public CelesteNetClientTCPUDPConnection(CelesteNetClient client, uint token, Settings settings, Socket tcpSock) : base(client.Data, token, settings, tcpSock) {
+        // `tcpStream` is the SHARED transport stream already used for the teapot handshake — a plain
+        // NetworkStream, or an authenticated SslStream for the TLS-encrypted chat channel. We reuse
+        // it (instead of making a fresh NetworkStream) so handshake + packet bytes ride one TLS
+        // session. UDP (position data, no chat) stays plaintext on its own socket below.
+        public CelesteNetClientTCPUDPConnection(CelesteNetClient client, uint token, Settings settings, Socket tcpSock, Stream tcpStream) : base(client.Data, token, settings, tcpSock) {
             Client = client;
 
             Logger.Log(LogLevel.DEV, "lifecycle", $"CelesteNetClientTCPUDPConnection created");
 
             // Initialize networking
-            TCPNetStream = new NetworkStream(tcpSock);
+            TCPNetStream = tcpStream;
             TCPReadStream = new BufferedStream(TCPNetStream);
             TCPWriteStream = new BufferedStream(TCPNetStream);
             UDPSocket = new(tcpSock.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
@@ -102,7 +106,13 @@ namespace Celeste.Mod.CelesteNet.Client {
                 TCPWriteStream.Dispose();
             } catch {
             }
-            TCPNetStream.Dispose();
+            // Same guard for the underlying stream: an SslStream's Dispose sends a TLS close-notify,
+            // which throws if the socket was already torn down out of our control. The base Dispose
+            // (above) already closed the socket; this stream leaves the socket open (leaveOpen).
+            try {
+                TCPNetStream.Dispose();
+            } catch {
+            }
             UDPSocket.Dispose();
             TCPSendQueue.Dispose();
             UDPSendQueue.Dispose();

@@ -153,6 +153,17 @@ namespace Celeste.Mod.CelesteNet.Client
 
         public const string DefaultServer = "127.0.0.1:17230";
 
+        // DESIGN INVARIANT: be careful not to break this. Empty = no TLS pin (plaintext TCP, for
+        // local/dev with no proxy). Non-empty = the chat-channel TCP connection MUST be TLS and the
+        // server certificate's SHA-256 fingerprint MUST equal this (normalized: hex, uppercase, no
+        // separators). The celeste-utils build bakes the real value in via source.py
+        // (inject_client_config). Build-injected only — no in-game UI, not persisted — so pinning
+        // cannot be silently disabled by a user.
+        public const string DefaultServerCertFingerprint = "";
+
+        [SettingIgnore, YamlIgnore]
+        public string ServerCertFingerprint { get; set; } = DefaultServerCertFingerprint;
+
         [SettingIgnore, YamlIgnore]
         public string EffectiveServer
         {

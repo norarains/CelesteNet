@@ -68,11 +68,15 @@ namespace Celeste.Mod.CelesteNet.Server.CelesteServer {
 
             string player = Clean(msg.Player?.FullName ?? "server");
             string scope = msg.Targets == null ? "global" : "private";
-            WriteEvent("chat", $"{player} [{scope}] {Clean(msg.Text)}");
+            // DESIGN INVARIANT: be careful not to break this. The chat channel is end-to-end
+            // TLS-encrypted; the on-disk event log keeps who/when/scope for moderation but MUST
+            // redact the message body so chat is never persisted in plaintext at rest.
+            WriteEvent("chat", $"{player} [{scope}] [redacted len={msg.Text.Length}]");
         }
 
         private void OnChatFilter(ChatModule chat, FilterDecision decision) {
-            WriteEvent("chat_filter", $"{decision.Handling} {decision.Cause} player={Clean(decision.playerName)} text={Clean(decision.chatText)}");
+            // Redacted: keep the filter decision/cause/player but never the offending message text.
+            WriteEvent("chat_filter", $"{decision.Handling} {decision.Cause} player={Clean(decision.playerName)} textlen={decision.chatText?.Length ?? 0}");
         }
 
         private static int? Ping(CelesteNetPlayerSession session)

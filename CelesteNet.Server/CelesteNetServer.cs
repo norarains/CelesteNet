@@ -181,6 +181,12 @@ namespace Celeste.Mod.CelesteNet.Server {
             Channels.Start();
 
             IPEndPoint serverEP = new(IPAddress.IPv6Any, Settings.MainPort);
+            // DESIGN INVARIANT: TCP (chat-bearing) acceptor may bind a private loopback endpoint
+            // so a TLS proxy can front the public port; UDP (position only) ALWAYS stays on
+            // serverEP. Empty TCPBindAddress = original public TCP bind on MainPort.
+            IPEndPoint tcpEP = string.IsNullOrEmpty(Settings.TCPBindAddress)
+                ? serverEP
+                : new IPEndPoint(IPAddress.Parse(Settings.TCPBindAddress), Settings.TCPBindPort > 0 ? Settings.TCPBindPort : Settings.MainPort);
             CelesteNetTCPUDPConnection.Settings tcpUdpConSettings = new() {
                 MaxPacketSize = Settings.MaxPacketSize,
                 MaxQueueSize = Settings.MaxQueueSize,
@@ -194,12 +200,12 @@ namespace Celeste.Mod.CelesteNet.Server {
                 UDPDeathScoreMax = Settings.UDPDeathScoreMax
             };
 
-            Logger.Log(LogLevel.INF, "server", $"Starting server on {serverEP}");
+            Logger.Log(LogLevel.INF, "server", $"Starting server on {serverEP} (TCP accept on {tcpEP})");
             ThreadPool.Scheduler.AddRole(new HandshakerRole(ThreadPool, this));
             ThreadPool.Scheduler.AddRole(new TCPUDPSenderRole(ThreadPool, this, serverEP));
             ThreadPool.Scheduler.AddRole(new TCPReceiverRole(ThreadPool, this, (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Settings.TCPRecvUseEPoll) ? new TCPEPollPoller() : new TCPFallbackPoller()));
             ThreadPool.Scheduler.AddRole(new UDPReceiverRole(ThreadPool, this, serverEP, ThreadPool.Scheduler.FindRole<TCPUDPSenderRole>()?.UDPSocket));
-            ThreadPool.Scheduler.AddRole(new TCPAcceptorRole(ThreadPool, this, serverEP, ThreadPool.Scheduler.FindRole<HandshakerRole>()!, ThreadPool.Scheduler.FindRole<TCPReceiverRole>()!, ThreadPool.Scheduler.FindRole<UDPReceiverRole>()!, ThreadPool.Scheduler.FindRole<TCPUDPSenderRole>()!, tcpUdpConSettings));
+            ThreadPool.Scheduler.AddRole(new TCPAcceptorRole(ThreadPool, this, tcpEP, ThreadPool.Scheduler.FindRole<HandshakerRole>()!, ThreadPool.Scheduler.FindRole<TCPReceiverRole>()!, ThreadPool.Scheduler.FindRole<UDPReceiverRole>()!, ThreadPool.Scheduler.FindRole<TCPUDPSenderRole>()!, tcpUdpConSettings));
 
             HeartbeatTimer.Start();
             PingRequestTimer.Start();

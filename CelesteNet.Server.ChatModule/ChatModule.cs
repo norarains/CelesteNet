@@ -294,7 +294,7 @@ namespace Celeste.Mod.CelesteNet.Server.Chat {
                     new DynamicData(session).Set("warnedOnceFor", null);
                 }
 
-                Logger.Log(LogLevel.INF, isCommand ? "chatcmd" : (isGlobalChat ? "chatmsg" : "chatetc"), msg.ToString(false, true, true));
+                Logger.Log(LogLevel.INF, isCommand ? "chatcmd" : (isGlobalChat ? "chatmsg" : "chatetc"), msg.ToRedactedString(false, true, true));
 
             } else if (msg.Player != null && (msg.Targets == null || msg.Targets.Length > 0)) {
                 /* This condition matches messages created by server but with a valid Player:
@@ -437,7 +437,7 @@ namespace Celeste.Mod.CelesteNet.Server.Chat {
         }
 
         public void Broadcast(DataChat msg) {
-            Logger.Log(LogLevel.INF, "chat", $"Broadcasting: {msg.Text}");
+            Logger.Log(LogLevel.INF, "chat", $"Broadcasting: [redacted len={msg.Text?.Length ?? 0}]");
             Handle(null, msg);
         }
 
@@ -448,12 +448,12 @@ namespace Celeste.Mod.CelesteNet.Server.Chat {
                 Color = color ?? Settings.ColorServer
             };
             if (player?.PlayerInfo == null) {
-                Logger.Log(LogLevel.INF, "chat", $"Sending to nobody: {text}");
+                Logger.Log(LogLevel.INF, "chat", $"Sending to nobody: [redacted len={text?.Length ?? 0}]");
                 PrepareAndLog(null, msg);
                 return null;
             }
 
-            Logger.Log(LogLevel.INF, "chat", $"Sending to {player.PlayerInfo}: {text}");
+            Logger.Log(LogLevel.INF, "chat", $"Sending to {player.PlayerInfo}: [redacted len={text?.Length ?? 0}]");
 
             msg.Targets = new DataPlayerInfo[] { player.PlayerInfo };
 
@@ -467,7 +467,7 @@ namespace Celeste.Mod.CelesteNet.Server.Chat {
             msg.Version++;
 
             bool isGlobal = msg.Targets == null || msg.Targets.Length == 0;
-            Logger.Log(LogLevel.INF, isGlobal ? "chatmsg" : "chatupd", msg.ToString(false, true, true));
+            Logger.Log(LogLevel.INF, isGlobal ? "chatmsg" : "chatupd", msg.ToRedactedString(false, true, true));
             OnForceSend?.Invoke(this, msg);
 
             if (msg.Targets == null) {

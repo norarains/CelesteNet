@@ -467,15 +467,16 @@ namespace Celeste.Mod.CelesteNet.Server.Control {
             }).ToArray());
         }
 
-        [RCEndpoint(false, "/chatlog", "?count={count}&detailed={true|false}", "?count=20&detailed=false", "Chat Log", "Basic chat log.")]
+        // Auth required: the chat log (including private/targeted messages) is operator-only.
+        // The dispatcher (Frontend.Handle) rejects unauthenticated requests with 401 before this
+        // runs, so no in-handler auth gating is needed. Only the authenticated control panel
+        // (cp/js/panels/chat.js) consumes /api/chatlog.
+        [RCEndpoint(true, "/chatlog", "?count={count}&detailed={true|false}", "?count=20&detailed=false", "Chat Log", "Basic chat log.")]
         public static void ChatLog(Frontend f, HttpRequestEventArgs c) {
-            bool auth = f.IsAuthorized(c);
             NameValueCollection args = f.ParseQueryString(c.Request.RawUrl);
 
             if (!int.TryParse(args["count"], out int count) || count <= 0)
                 count = 20;
-            if (!auth && count > 100)
-                count = 100;
 
             if (!bool.TryParse(args["detailed"], out bool detailed))
                 detailed = false;
@@ -486,7 +487,7 @@ namespace Celeste.Mod.CelesteNet.Server.Control {
             lock (buffer) {
                 for (int i = Math.Max(-buffer.Moved, -count); i < 0; i++) {
                     DataChat? msg = buffer[i];
-                    if (msg != null && ((msg.Targets == null) || auth))
+                    if (msg != null)
                         log.Add(detailed ? msg.ToDetailedFrontendChat() : msg.ToFrontendChat());
                 }
             }

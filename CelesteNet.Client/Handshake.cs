@@ -12,12 +12,15 @@ namespace Celeste.Mod.CelesteNet.Client {
     public static class Handshake {
 
         // TODO MonoKickstart is so stupid, it can't even handle string.Split(char)...
-        public static Tuple<uint, IConnectionFeature[], T> DoTeapotHandshake<T>(Socket sock, IConnectionFeature[] features, string nameKey, CelesteNetClientOptions options) where T : new() {
+        // `stream` is the SINGLE shared transport stream (a plain NetworkStream, OR an already-
+        // authenticated SslStream for the TLS-encrypted chat channel). DESIGN INVARIANT: be careful
+        // not to break this. We must NOT dispose `stream` here and must NOT buffer-ahead — the teapot
+        // response ends exactly at the blank line and the persistent connection's packet bytes follow
+        // on this very same stream. The StreamWriter uses leaveOpen:true and we only flush it.
+        public static Tuple<uint, IConnectionFeature[], T> DoTeapotHandshake<T>(Stream stream, IConnectionFeature[] features, string nameKey, CelesteNetClientOptions options) where T : new() {
             // Find connection features
             // We don't buffer, as we could read actual packet data
-            using NetworkStream netStream = new(sock, false);
-
-            using StreamWriter writer = new(netStream);
+            StreamWriter writer = new(stream, new UTF8Encoding(false), 1024, leaveOpen: true);
             // Send the "HTTP" request
             StringBuilder reqBuilder = new($@"
 TEAREQ /teapot HTTP/4.2
@@ -54,14 +57,14 @@ CelesteNet-ClientVersion: {CelesteNetClientModule.Instance.Metadata.VersionStrin
             writer.Flush();
 
             // Read the "HTTP" response
-            string? statusLine = netStream.UnbufferedReadLine();
+            string? statusLine = stream.UnbufferedReadLine();
             string[]? statusSegs = statusLine?.Split(new[] { ' ' }, 3);
             if (statusSegs?.Length != 3)
                 throw new InvalidDataException($"Invalid HTTP response status line: '{statusLine}'");
             int statusCode = int.Parse(statusSegs[1]);
 
             Dictionary<string, string> headers = new();
-            for (string? line = netStream.UnbufferedReadLine(); !string.IsNullOrEmpty(line); line = netStream.UnbufferedReadLine()) {
+            for (string? line = stream.UnbufferedReadLine(); !string.IsNullOrEmpty(line); line = stream.UnbufferedReadLine()) {
                 int split = line.IndexOf(':');
                 if (split == -1)
                     throw new InvalidDataException($"Invalid HTTP header: '{line}'");
@@ -69,7 +72,7 @@ CelesteNet-ClientVersion: {CelesteNetClientModule.Instance.Metadata.VersionStrin
             }
 
             string content = "";
-            for (string? line = netStream.UnbufferedReadLine(); !string.IsNullOrEmpty(line); line = netStream.UnbufferedReadLine())
+            for (string? line = stream.UnbufferedReadLine(); !string.IsNullOrEmpty(line); line = stream.UnbufferedReadLine())
                 content += line + "\n";
 
             // Parse the "HTTP response"

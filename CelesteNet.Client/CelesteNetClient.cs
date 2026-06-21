@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using Celeste.Mod.CelesteNet.DataTypes;
 
@@ -124,6 +130,10 @@ namespace Celeste.Mod.CelesteNet.Client {
                         if (Socket.OSSupportsIPv4)
                             sockAll.Add(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp));
                         Socket? sock = null;
+                        // The SINGLE shared TCP transport stream (plain NetworkStream, or an
+                        // authenticated+pinned SslStream for the TLS chat channel). Threaded through
+                        // BOTH the teapot handshake and the persistent connection.
+                        Stream? tcpStream = null;
                         LastConnectionError = null;
                         try {
                             uint conToken;
@@ -157,14 +167,21 @@ namespace Celeste.Mod.CelesteNet.Client {
                                             sock = sockTry;
                                             sock.Connect(address, Settings.Port);
 
+                                            // Establish the (optionally TLS) transport stream ONCE,
+                                            // before any bytes — the handshake + the connection share it.
+                                            tcpStream = WrapTransportStream(sock, Settings.Host, Settings.ServerCertFingerprint);
+
                                             LastConnectionError = sockEx as ConnectionErrorCodeException;
 
                                             // Do the teapot handshake here, as a successful "connection" doesn't mean that the server can handle IPv6.
-                                            teapotRes = Handshake.DoTeapotHandshake<CelesteNetClientTCPUDPConnection.Settings>(sock, ConFeatures, Settings.NameKey, Options);
+                                            teapotRes = Handshake.DoTeapotHandshake<CelesteNetClientTCPUDPConnection.Settings>(tcpStream, ConFeatures, Settings.NameKey, Options);
                                             Logger.Log(LogLevel.INF, "main", $"Connecting to {address} ({address.AddressFamily}) succeeded");
                                             break;
                                         } catch (Exception e) {
                                             Logger.Log(LogLevel.INF, "main", $"Connecting to {address} ({address.AddressFamily}) failed: {e.GetType()}: {e.Message}");
+                                            // Dispose the half-built stream (leaveOpen on the socket) before tearing the socket down.
+                                            try { tcpStream?.Dispose(); } catch { }
+                                            tcpStream = null;
                                             sock?.ShutdownSafe(SocketShutdown.Both);
                                             sock = null;
                                             teapotRes = null;
@@ -188,7 +205,7 @@ namespace Celeste.Mod.CelesteNet.Client {
                                     sockTry.Dispose();
                                 }
 
-                                if (sock == null || teapotRes == null) {
+                                if (sock == null || tcpStream == null || teapotRes == null) {
                                     if (sockEx == null) {
                                         throw new Exception($"Failed to connect to {Settings.Host}:{Settings.Port}, didn't find any connectable address, no exception (was any address even tried?)");
                                     }
@@ -209,7 +226,7 @@ namespace Celeste.Mod.CelesteNet.Client {
                             }
 
                             // Create a connection and start the heartbeat timer
-                            CelesteNetClientTCPUDPConnection con = new(this, conToken, settings, sock);
+                            CelesteNetClientTCPUDPConnection con = new(this, conToken, settings, sock, tcpStream);
                             con.OnDisconnect += _ => Dispose();
                             if (Settings.Debug.ConnectionType == ConnectionType.TCP)
                                 con.UseUDP = false;
@@ -260,6 +277,53 @@ namespace Celeste.Mod.CelesteNet.Client {
 
             Logger.Log(LogLevel.INF, "main", "Ready");
             IsReady = true;
+        }
+
+        // ── TLS-encrypted chat channel ────────────────────────────────────────────────────────
+        // DESIGN INVARIANT: be careful not to break this. When Settings.ServerCertFingerprint is
+        // non-empty the TCP/chat connection MUST be TLS and the server certificate is PINNED by its
+        // SHA-256 fingerprint (the server is self-signed, so CA/hostname trust is intentionally
+        // ignored). Empty fingerprint = plain NetworkStream (local/dev, no proxy). TLS 1.2 is
+        // allowed alongside 1.3 because SslStream TLS-1.3 is unavailable on stable Windows 10.
+        // UDP (position data, no chat) is never wrapped.
+        private static Stream WrapTransportStream(Socket sock, string host, string fingerprint) {
+            NetworkStream netStream = new(sock, ownsSocket: false);
+            if (string.IsNullOrEmpty(fingerprint))
+                return netStream;
+
+            SslStream ssl = new(netStream, leaveInnerStreamOpen: false, BuildPinnedCertValidator(fingerprint));
+            try {
+                ssl.AuthenticateAsClient(new SslClientAuthenticationOptions {
+                    TargetHost = host,
+                    EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+                });
+            } catch {
+                ssl.Dispose();
+                throw;
+            }
+            return ssl;
+        }
+
+        private static RemoteCertificateValidationCallback BuildPinnedCertValidator(string fingerprint) {
+            string expected = NormalizeCertFingerprint(fingerprint);
+            return (sender, cert, chain, errors) => {
+                // Pin: compare the presented cert's SHA-256 to the baked fingerprint, ignoring
+                // sslPolicyErrors (a self-signed cert always trips chain/name errors). Never return
+                // true on a mismatch; never fall back to chain validation when pinning is enabled.
+                if (cert == null)
+                    return false;
+                return NormalizeCertFingerprint(cert.GetCertHashString(HashAlgorithmName.SHA256)) == expected;
+            };
+        }
+
+        private static string NormalizeCertFingerprint(string? value) {
+            if (string.IsNullOrEmpty(value))
+                return "";
+            StringBuilder sb = new(value.Length);
+            foreach (char c in value)
+                if (Uri.IsHexDigit(c))
+                    sb.Append(char.ToUpperInvariant(c));
+            return sb.ToString();
         }
 
         public void Dispose() {

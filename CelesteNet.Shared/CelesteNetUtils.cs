@@ -226,7 +226,10 @@ namespace Celeste.Mod.CelesteNet {
             }
         }
 
-        public static string? UnbufferedReadLine(this NetworkStream netStream) {
+        // Accepts any Stream (widened from NetworkStream) so the same call works over a plain
+        // NetworkStream OR an SslStream — the TLS-encrypted chat channel shares one stream between
+        // the teapot handshake and the persistent connection. Only ReadByte() is used.
+        public static string? UnbufferedReadLine(this Stream netStream) {
             //Unbuffered "read line" implementation reading every byte one at a time
             //Extremely slow and inefficient, but otherwise we may gobble up binary packet bytes by accident :catresort:
             List<byte> lineChars = new List<byte>();
