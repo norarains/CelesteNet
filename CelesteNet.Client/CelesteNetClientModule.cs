@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Celeste.Mod.CelesteNet.Client.Components;
 using Celeste.Mod.CelesteNet.Client.Utils;
 using Celeste.Mod.CelesteNet.DataTypes;
-using Celeste.Mod.Helpers;
 using FMOD.Studio;
 using Monocle;
 using MonoMod.Cil;
@@ -90,8 +89,6 @@ namespace Celeste.Mod.CelesteNet.Client
 
         // This should ideally be part of the "emote module" if emotes were a fully separate thing.
         public VirtualJoystick JoystickEmoteWheel;
-        public EverestModule CelesteNetModule;
-
         // 官服检测
         // 是否又安装了官服
         public bool InstalledBothServer { get; set; }
@@ -133,21 +130,11 @@ namespace Celeste.Mod.CelesteNet.Client
             CurrentVersion = Metadata.VersionString;
 
             CelesteNetClientSpriteDB.Load();
-            CelesteNetModule = (EverestModule)Activator.CreateInstance(FakeAssembly.GetFakeEntryAssembly().GetType("Celeste.Mod.NullModule"), new EverestModuleMetadata
-            {
-                Name = "CelesteNet.Client",
-                VersionString = "2.3.1"
-            });
-            Everest.Register(CelesteNetModule);
-            try
-            {
-                var methodRegisterMod = typeof(EverestModuleMetadata).GetMethod("RegisterMod", BindingFlags.Instance | BindingFlags.NonPublic);
-                methodRegisterMod?.Invoke(CelesteNetModule.Metadata, new object[] { });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDetailedException(ex);
-            }
+            // DESIGN INVARIANT: be careful not to break this. Ring.CelesteNet.Client must not
+            // register a fake module named "CelesteNet.Client". Mods such as Hateline treat that
+            // name as the stock CelesteNet API and cast the dependency to CelesteNetClientModule;
+            // advertising a NullModule under that name crashes those mods. Keeping Ring isolated
+            // makes stock-CelesteNet integrations simply see "CelesteNet.Client is not loaded".
             On.Celeste.OuiMainMenu.Enter += OuiMainMenu_Enter;
         }
 
